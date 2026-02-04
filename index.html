@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Swiss Tournament — TV Standings (Safe)</title>
+<style>
+:root{
+  --bg:#070b14; --panel:#0d1322; --panel2:#0b1020; --line:#1f2a44;
+  --text:#e8eefc; --muted:#9fb0d1;
+  --win:#22c55e; --draw:#9ca3af; --loss:#ef4444;
+  --blue:#3b82f6; --green:#22c55e; --gray:#94a3b8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  color:var(--text);
+  background:
+    radial-gradient(900px 560px at 30% 0%, rgba(59,130,246,.18), transparent 60%),
+    radial-gradient(900px 560px at 70% 0%, rgba(34,197,94,.12), transparent 60%),
+    var(--bg);
+  padding:14px;
+}
+.wrap{max-width:1200px;margin:0 auto}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.title{font-weight:1000;font-size:18px;margin:0}
+.subtitle{margin-top:4px;font-size:12px;color:var(--muted);line-height:1.25}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabbtn{
+  background:rgba(13,19,34,.75);
+  border:1px solid var(--line);
+  color:var(--text);
+  padding:8px 12px;border-radius:14px;
+  cursor:pointer;font-weight:1000;font-size:12px;
+}
+.tabbtn.active{border-color:rgba(59,130,246,.35);background:linear-gradient(90deg, rgba(59,130,246,.18), rgba(34,197,94,.10));}
+.card{
+  background:rgba(13,19,34,.88);
+  border:1px solid rgba(31,42,68,.9);
+  border-radius:18px;
+  box-shadow:0 18px 70px rgba(0,0,0,.55);
+  padding:12px; margin-top:10px;
+}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.right{margin-left:auto}
+.pill{
+  background:rgba(10,15,30,.75);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:7px 10px;
+  font-weight:950;
+  font-size:12px;
+  display:inline-flex;gap:8px;align-items:center;white-space:nowrap;
+}
+.pill .k{color:var(--muted);font-weight:900}
+.btn{
+  border:none;border-radius:14px;padding:9px 12px;
+  cursor:pointer;font-weight:1000;font-size:12px;
+  background:linear-gradient(90deg, rgba(59,130,246,.95), rgba(34,197,94,.85));
+  color:#081028;
+}
+.btn.alt{background:rgba(13,19,34,.75);border:1px solid var(--line);color:var(--text);}
+input, select, textarea{
+  width:100%;
+  padding:8px 10px;border-radius:14px;border:1px solid var(--line);
+  background:rgba(10,15,30,.75);color:var(--text);outline:none;
+  font-weight:900;font-size:12px;
+}
+textarea{min-height:170px;resize:vertical;font-weight:800}
+.tableWrap{
+  max-height: calc(100vh - 220px);
+  overflow:auto;border-radius:14px;
+  border:1px solid rgba(31,42,68,.9);
+  background:rgba(9,13,25,.35);
+}
+table{width:100%;border-collapse:separate;border-spacing:0}
+thead th{
+  position:sticky; top:0; z-index:5;
+  background:rgba(8,11,20,.95);
+  border-bottom:1px solid rgba(31,42,68,.9);
+  text-align:left; color:var(--muted);
+  font-size:11px;font-weight:950;padding:10px 10px; user-select:none; cursor:pointer; white-space:nowrap;
+}
+tbody td{padding:10px 10px;font-weight:950;font-size:13px;border-bottom:1px solid rgba(31,42,68,.55);white-space:nowrap;vertical-align:middle;}
+tbody tr:hover td{background:rgba(59,130,246,.06)}
+.rankCell{width:52px;}
+.rankCircle{
+  width:30px;height:30px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+  font-weight:1100;font-size:12px;border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 10px 22px rgba(0,0,0,.25) inset;
+}
+.rankCircle.blue{background:rgba(59,130,246,.22);border-color:rgba(59,130,246,.40);}
+.rankCircle.green{background:rgba(34,197,94,.20);border-color:rgba(34,197,94,.35);}
+.rankCircle.gray{background:rgba(148,163,184,.14);border-color:rgba(148,163,184,.28);}
+.playerCell{display:flex;align-items:center;gap:10px;}
+.playerName{font-weight:1050}
+.metaSmall{color:var(--muted);font-size:12px;font-weight:900}
+.last5{display:flex;gap:6px;align-items:center;}
+.formBox{width:26px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:1100;font-size:12px;color:#07101f;border:1px solid rgba(255,255,255,.08);}
+.formBox.w{background:rgba(34,197,94,.95)}
+.formBox.d{background:rgba(156,163,175,.9)}
+.formBox.l{background:rgba(239,68,68,.92)}
+.formBox.p{background:rgba(100,116,139,.35);color:rgba(232,238,252,.75);border-color:rgba(31,42,68,.85)}
+.roundTabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.roundBtn{padding:7px 10px;border-radius:14px;border:1px solid var(--line);background:rgba(13,19,34,.75);color:var(--text);cursor:pointer;font-weight:950;font-size:12px}
+.roundBtn.active{border-color:rgba(59,130,246,.35);background:linear-gradient(90deg, rgba(59,130,246,.18), rgba(34,197,94,.10))}
+.matchGrid{display:grid; grid-template-columns: 1fr 1fr; gap:10px; max-height: calc(100vh - 250px); overflow:auto; padding-right:4px;}
+@media(max-width:900px){ .matchGrid{grid-template-columns:1fr} }
+.matchCard{border:1px solid rgba(31,42,68,.9);background:rgba(9,13,25,.45);border-radius:16px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end;}
+.matchCard .wide{grid-column:1/-1}
+.matchHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.matchHeader .idx{font-weight:1050;font-size:12px;color:var(--muted)}
+footer{text-align:center;font-size:12px;opacity:.7;padding:10px}
+
+/* Emphasize Points column */
+
+/* Tighten PTS column spacing */
+th[data-sort="points"], .ptsCell{
+  padding-left:8px !important;
+  padding-right:8px !important;
+}
+
+.ptsHeader{ color: var(--text); font-weight:1100; }
+.ptsCell{ font-weight:1200; font-size:14px; letter-spacing:.2px; }
+
+
+/* === APPEALING FIXTURE-STYLE ROUNDS === */
+.matchGrid{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:8px !important;
+  max-height: calc(100vh - 250px);
+}
+.fixtureRow{
+  border:1px solid rgba(31,42,68,.9);
+  background:rgba(9,13,25,.45);
+  border-radius:14px;
+  padding:10px 12px;
+  display:grid;
+  grid-template-columns: 52px 1fr 120px 1fr 74px;
+  gap:10px;
+  align-items:center;
+}
+.fixtureIdx{
+  font-weight:1000;
+  font-size:12px;
+  color:var(--muted);
+}
+.fixtureTeam{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.fixtureVs{
+  text-align:center;
+  font-weight:1100;
+  color:var(--muted);
+  font-size:12px;
+}
+.teamSelect{
+  width:100%;
+  height:36px;
+  padding:6px 10px;
+  border-radius:12px;
+  font-weight:950;
+}
+.resultSelect{
+  width:120px;
+  height:36px;
+  padding:6px 10px;
+  border-radius:12px;
+  font-weight:1000;
+  text-align:center;
+}
+.delMini{
+  justify-self:end;
+  border:1px solid var(--line);
+  background:rgba(13,19,34,.75);
+  color:var(--text);
+  border-radius:12px;
+  padding:7px 10px;
+  font-weight:1000;
+  font-size:12px;
+  cursor:pointer;
+}
+.delMini:hover{ background:rgba(59,130,246,.10); }
+
+.viewerTeam{
+  font-weight:1050;
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.viewerRes{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:30px;
+  padding:0 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  font-weight:1100;
+  font-size:12px;
+  color:var(--text);
+  background:rgba(10,15,30,.75);
+}
+.viewerRes.winA{ background:rgba(34,197,94,.22); border-color:rgba(34,197,94,.35); }
+.viewerRes.winB{ background:rgba(239,68,68,.22); border-color:rgba(239,68,68,.35); }
+.viewerRes.draw{ background:rgba(156,163,175,.22); border-color:rgba(156,163,175,.35); }
+.viewerRes.pending{ background:rgba(100,116,139,.18); border-color:rgba(31,42,68,.85); color:rgba(232,238,252,.85); }
+
+@media(max-width:900px){
+  .fixtureRow{ grid-template-columns: 46px 1fr 1fr 1fr 64px; }
+  .resultSelect{ width:100%; }
+}
+
+
+/* === POLISH PACK: density + hover === */
+.matchGrid{ gap:6px !important; }
+.fixtureRow{
+  padding:8px 10px !important;
+  border-radius:12px !important;
+  border-color: rgba(31,42,68,.75) !important;
+  background: rgba(9,13,25,.38) !important;
+}
+.fixtureRow:hover{
+  background: rgba(59,130,246,.06) !important;
+  border-color: rgba(59,130,246,.25) !important;
+}
+.viewerTeam.win{
+  font-weight:1200 !important;
+}
+.viewerTeam.lose{
+  opacity:.72 !important;
+}
+/* hide delete column in viewer mode */
+.viewerHide{ display:none !important; }
+
+
+/* === WIDTH / DENSITY TWEAKS (fixture rows) === */
+#roundMatches{ display:flex; flex-direction:column; align-items:center; }
+.fixtureRow{
+  max-width: 980px;
+  width: 100%;
+  grid-template-columns: 46px 1fr 96px 1fr 74px;
+}
+.fixtureRow .delMini{ justify-self:end; }
+.viewerRes{ min-width: 86px; }
+@media(max-width:1100px){
+  .fixtureRow{ max-width: 100%; grid-template-columns: 46px 1fr 92px 1fr 0px; }
+}
+
+
+/* viewer mode removes delete column space */
+body.viewerMode .fixtureRow{ grid-template-columns: 46px 1fr 96px 1fr 0px; }
+body.viewerMode .delMini{ display:none !important; }
+
+
+body.viewerMode .roundBtn.viewerHide{ display:inline-flex !important; }
+</style>
+
+<style>
+tbody tr {
+  transition: transform 0.45s ease, background-color 0.45s ease;
+}
+tr.move-up td { background: rgba(34,197,94,.15); }
+tr.move-down td { background: rgba(239,68,68,.15); }
+.rankDelta {
+  font-size:11px;
+  font-weight:900;
+  margin-left:6px;
+}
+.rankDelta.up { color:#22c55e; }
+.rankDelta.down { color:#ef4444; }
+.matchPulse { animation: pulse 0.6s ease; }
+@keyframes pulse {
+  0% { box-shadow:0 0 0 rgba(59,130,246,0); }
+  50% { box-shadow:0 0 18px rgba(59,130,246,.6); }
+  100% { box-shadow:0 0 0 rgba(59,130,246,0); }
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="title">Swiss Tournament — TV Standings</div>
+      <div class="subtitle">🔵 Top 8 qualify directly • 🟢 9–24 qualify via playoff • (25+ gray) • Viewer mode: add <b>?view=1</b></div>
+    </div>
+    <div class="tabs">
+      <button id="tabStandingsBtn" class="tabbtn active" onclick="setTab('standings')">Standings</button>
+      <button id="tabRoundsBtn" class="tabbtn" onclick="setTab('rounds')">Rounds 1–8</button>
+      <button id="tabSettingsBtn" class="tabbtn" onclick="setTab('settings')">Settings</button>
+      <button id="tabIOBtn" class="tabbtn" onclick="setTab('io')">Import / Export</button>
+    </div>
+  </header>
+
+  <section id="tab-standings" class="card">
+    <div class="row">
+      <span class="pill"><span class="k">Scoring</span><span id="scoreLabel">W 3 • D 1 • L 0</span></span>
+      <span class="pill"><span class="k">Search</span><input id="searchBox" placeholder="type name…" style="width:200px"/></span>
+      <button class="btn alt right" onclick="renderStandings()">Recalculate</button>
+    </div>
+    <div style="height:10px"></div>
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-sort="rank" class="rankCell">#</th>
+            <th data-sort="name">Team</th>
+            <th data-sort="played">P</th>
+            <th data-sort="w">W</th>
+            <th data-sort="d">D</th>
+            <th data-sort="l">L</th>
+            <th data-sort="avgOpp">Avg Opp Elo</th>
+            <th data-sort="points" class="ptsHeader" style="text-align:right">PTS</th>
+            <th>Last 5</th>
+          </tr>
+        </thead>
+        <tbody id="standingsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-rounds" class="card" style="display:none">
+    <div class="row">
+      <div class="roundTabs" id="roundTabs"></div>
+      <button class="btn alt right" onclick="addMatch()">Add match</button>
+      <button class="btn alt" onclick="seed18()">Seed 18 empty</button>
+      <button class="btn alt" onclick="clearRound()">Clear round</button>
+    </div>
+    <div class="subtitle" id="roundInfo" style="margin-top:6px"></div>
+    <div style="height:10px"></div>
+    <div class="matchGrid" id="roundMatches"></div>
+  </section>
+
+  <section id="tab-settings" class="card" style="display:none">
+    <div class="row">
+      <span class="pill"><span class="k">Players</span><span id="playerCount">0</span></span>
+      <span class="pill right"><span class="k">Tip</span><span>one per line: name,elo</span></span>
+    </div>
+    <div style="height:12px"></div>
+    <textarea id="playersInput"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" onclick="applyPlayers()">Apply players</button>
+      <button class="btn alt" onclick="resetRounds()">Clear ALL rounds</button>
+    </div>
+    <div style="height:14px"></div>
+    <div class="row">
+      <span class="pill"><span class="k">Blue top</span><input id="blueCut" type="number" value="8" style="width:90px"/></span>
+      <span class="pill"><span class="k">Green to</span><input id="greenCut" type="number" value="24" style="width:90px"/></span>
+      <span class="pill"><span class="k">Win</span><input id="winPts" type="number" step="1" value="3" style="width:90px"/></span>
+      <span class="pill"><span class="k">Draw</span><input id="drawPts" type="number" step="1" value="1" style="width:90px"/></span>
+      <span class="pill"><span class="k">Loss</span><input id="lossPts" type="number" step="1" value="0" style="width:90px"/></span>
+    </div>
+  </section>
+
+  <section id="tab-io" class="card" style="display:none">
+    <div class="row">
+      <button class="btn" onclick="doExport()">Export JSON</button>
+      <button class="btn alt" onclick="doImport()">Import JSON</button>
+      <button class="btn alt right" onclick="doReset()">Reset</button>
+    </div>
+    <div style="height:10px"></div>
+    <textarea id="ioText" placeholder="Export creates JSON here. Paste JSON here and press Import."></textarea>
+    <div class="subtitle" style="margin-top:8px">Viewer mode: open with <b>?view=1</b> (read-only).</div>
+  </section>
+</div>
+<footer>Open normally for editing • Add <b>?view=1</b> for read-only</footer>
+
+<script>
+const VIEW_MODE = new URLSearchParams(location.search).get("view") === "1";
+if(VIEW_MODE){ document.addEventListener('DOMContentLoaded', ()=>document.body.classList.add('viewerMode')); }
+const DEFAULT_PLAYERS = [{"name": "Tommy", "elo": 2296}, {"name": "Eli", "elo": 2236}, {"name": "Kartik", "elo": 2167}, {"name": "Georgios", "elo": 2108}, {"name": "Matthew", "elo": 2080}, {"name": "John", "elo": 2059}, {"name": "Prince", "elo": 2008}, {"name": "Shaswat", "elo": 1998}, {"name": "Shashi", "elo": 1915}, {"name": "Tanuj", "elo": 1904}, {"name": "Mark", "elo": 1902}, {"name": "Shel", "elo": 1801}, {"name": "Yosef", "elo": 1773}, {"name": "Aryan", "elo": 1756}, {"name": "Anas", "elo": 1700}, {"name": "Ayush", "elo": 1682}, {"name": "Brian", "elo": 1652}, {"name": "Rahul", "elo": 1500}, {"name": "Andreas", "elo": 1473}, {"name": "Bernie", "elo": 1380}, {"name": "Klei", "elo": 1375}, {"name": "Ram", "elo": 1368}, {"name": "Sawyer", "elo": 1359}, {"name": "Junoon", "elo": 1329}, {"name": "Ayein", "elo": 1300}, {"name": "Ananya", "elo": 1269}, {"name": "Zaeeshah", "elo": 1253}, {"name": "Meghna", "elo": 1251}, {"name": "Lucas", "elo": 1201}, {"name": "Chris", "elo": 1185}, {"name": "draco", "elo": 1115}, {"name": "Hiba", "elo": 1057}, {"name": "Mohamed", "elo": 1014}, {"name": "Ryan", "elo": 953}, {"name": "Kartik Pant", "elo": 832}, {"name": "Yahya", "elo": 405}];
+
+let state = {
+  players: DEFAULT_PLAYERS.slice(),
+  rounds: Array.from({length:8}, ()=>({matches:[]})),
+  scoring: {win:3, draw:1, loss:0},
+  cuts: {blueCut:8, greenCut:24},
+  sort: {key:"points", dir:"desc"}
+};
+let currentRound = 0;
+
+function esc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function setTab(name){
+  ["standings","rounds","settings","io"].forEach(t=>{
+    document.getElementById("tab-"+t).style.display = (t===name) ? "" : "none";
+  });
+  document.getElementById("tabStandingsBtn").classList.toggle("active", name==="standings");
+  document.getElementById("tabRoundsBtn").classList.toggle("active", name==="rounds");
+  document.getElementById("tabSettingsBtn").classList.toggle("active", name==="settings");
+  document.getElementById("tabIOBtn").classList.toggle("active", name==="io");
+}
+
+function playerByName(name){
+  for(const p of state.players) if(p.name===name) return p;
+  return {name:name, elo:0};
+}
+
+function recalc(){
+  const stats = {};
+  state.players.forEach(p=>{
+    stats[p.name] = {name:p.name, elo:p.elo||0, w:0,d:0,l:0,played:0,points:0, opps:[], avgOpp:0, form:[]};
+  });
+  const S = state.scoring;
+
+  state.rounds.forEach(r=>{
+    r.matches.forEach(m=>{
+      if(!m.a || !m.b) return;
+      if(!stats[m.a] || !stats[m.b]) return;
+
+      // Pending games should NOT count as "Played" in standings.
+      // We still record a "P" in form, but do not add to played/opponent averages until a result is entered.
+      if(!m.result){
+        stats[m.a].form.push("P");
+        stats[m.b].form.push("P");
+        return;
+      }
+
+      // Completed game: now it counts as played + affects Avg Opp Elo
+      stats[m.a].opps.push(m.b);
+      stats[m.b].opps.push(m.a);
+      stats[m.a].played++; 
+      stats[m.b].played++;
+
+if(m.result==="A"){ stats[m.a].w++; stats[m.b].l++; stats[m.a].points += S.win; stats[m.b].points += S.loss; stats[m.a].form.push("W"); stats[m.b].form.push("L"); }
+      else if(m.result==="B"){ stats[m.b].w++; stats[m.a].l++; stats[m.b].points += S.win; stats[m.a].points += S.loss; stats[m.b].form.push("W"); stats[m.a].form.push("L"); }
+      else if(m.result==="D"){ stats[m.a].d++; stats[m.b].d++; stats[m.a].points += S.draw; stats[m.b].points += S.draw; stats[m.a].form.push("D"); stats[m.b].form.push("D"); }
+    });
+  });
+
+  Object.values(stats).forEach(s=>{
+    const oppElos = s.opps.map(o=>playerByName(o).elo).filter(x=>Number.isFinite(x));
+    s.avgOpp = oppElos.length ? Math.round(oppElos.reduce((a,b)=>a+b,0)/oppElos.length) : 0;
+    s.form = s.form.slice(-5);
+  });
+
+  return Object.values(stats);
+}
+
+function sortRows(rows){
+  const key = state.sort.key, dir = state.sort.dir;
+  const mul = (dir==="asc") ? 1 : -1;
+  rows.sort((a,b)=>{
+    if(key==="name") return mul * a.name.localeCompare(b.name);
+    if(key==="played") return mul*(a.played-b.played) || -mul*(a.points-b.points) || a.name.localeCompare(b.name);
+    if(key==="w"||key==="d"||key==="l") return mul*(a[key]-b[key]) || -mul*(a.points-b.points) || a.name.localeCompare(b.name);
+    if(key==="avgOpp") return mul*(a.avgOpp-b.avgOpp) || -mul*(a.points-b.points) || a.name.localeCompare(b.name);
+    return mul*(a.points-b.points) || mul*(a.avgOpp-b.avgOpp) || a.name.localeCompare(b.name);
+  });
+  rows.forEach((r,i)=>r.rank=i+1);
+  return rows;
+}
+
+function formBoxes(form){
+  const arr = Array.from({length:5}, (_,i)=> form[i] || "P");
+  return arr.map(ch=>{
+    if(ch==="W") return '<span class="formBox w">W</span>';
+    if(ch==="D") return '<span class="formBox d">D</span>';
+    if(ch==="L") return '<span class="formBox l">L</span>';
+    return '<span class="formBox p">—</span>';
+  }).join("");
+}
+
+function renderStandings(){
+  const search = (document.getElementById("searchBox").value||"").trim().toLowerCase();
+  let rows = sortRows(recalc());
+  if(search) rows = rows.filter(r => r.name.toLowerCase().includes(search));
+
+  const tb = document.getElementById("standingsBody");
+  tb.innerHTML = "";
+
+  const blueCut = Number(state.cuts.blueCut)||8;
+  const greenCut = Number(state.cuts.greenCut)||24;
+
+  rows.forEach(r=>{
+    const cls = (r.rank<=blueCut) ? "blue" : (r.rank<=greenCut ? "green":"gray");
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="rankCell"><span class="rankCircle ${cls}">${r.rank}</span></td>
+      <td><div class="playerCell"><div class="playerName">${esc(r.name)}</div><div class="metaSmall">${r.elo? r.elo:""}</div></div></td>
+      <td>${r.played}</td>
+      <td>${r.w}</td>
+      <td>${r.d}</td>
+      <td>${r.l}</td>
+      <td>${r.avgOpp}</td>
+      <td class="ptsCell" style="text-align:right">${r.points}</td>
+      <td><div class="last5">${formBoxes(r.form)}</div></td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  document.getElementById("scoreLabel").textContent = `W ${state.scoring.win} • D ${state.scoring.draw} • L ${state.scoring.loss}`;
+  document.getElementById("playerCount").textContent = state.players.length;
+}
+
+function renderRoundTabs(){
+  const rt = document.getElementById("roundTabs");
+  rt.innerHTML="";
+  for(let i=0;i<8;i++){ 
+    const b=document.createElement("button");
+    b.className="roundBtn"+(i===currentRound?" active":"");
+    b.textContent="Round "+(i+1);
+    b.onclick=()=>{ currentRound=i; renderRoundTabs(); renderRound(); };
+    rt.appendChild(b);
+  }
+}
+
+function playerOptions(selected){
+  const opts = state.players.map(p=>`<option value="${esc(p.name)}" ${p.name===selected?"selected":""}>${esc(p.name)}</option>`).join("");
+  return `<option value="">—</option>${opts}`;
+}
+
+function renderRound(){
+  const r = state.rounds[currentRound];
+  document.getElementById("roundInfo").textContent = `Round ${currentRound+1} • Matches: ${r.matches.length} • Pairings always editable`;
+
+  const container = document.getElementById("roundMatches");
+  container.innerHTML = "";
+
+  // Helper: map result to pretty pill
+  function resPill(result, aName, bName){
+    if(!result) return '<span class="viewerRes pending">—</span>';
+    if(result==="A") return '<span class="viewerRes winA">1-0</span>';
+    if(result==="B") return '<span class="viewerRes winB">0-1</span>';
+    return '<span class="viewerRes draw">1/2-1/2</span>';
+  }
+
+  r.matches.forEach((m, idx) => {
+    const row = document.createElement("div");
+    row.className = "fixtureRow";
+
+    // Viewer mode: show text (looks like fixtures)
+    if(VIEW_MODE){
+      row.innerHTML = `
+        <div class="fixtureIdx">#${idx+1}</div>
+        <div class="fixtureTeam"><span class="viewerTeam">${esc(m.a||"—")}</span></div>
+        <div class="fixtureVs">${resPill(m.result, m.a, m.b)}</div>
+        <div class="fixtureTeam" style="justify-content:flex-end;"><span class="viewerTeam">${esc(m.b||"—")}</span></div>
+        <button class="delMini" style="opacity:.55;cursor:not-allowed;" disabled>Delete</button>
+      `;
+      container.appendChild(row);
+      return;
+    }
+
+    // Edit mode: compact selects inline
+    row.innerHTML = `
+      <div class="fixtureIdx">#${idx+1}</div>
+      <div class="fixtureTeam">
+        <select class="teamSelect" data-field="a" data-idx="${idx}">${playerOptions(m.a||"")}</select>
+      </div>
+      <div class="fixtureVs">
+        <select class="resultSelect" data-field="result" data-idx="${idx}">
+          <option value="" ${!m.result?"selected":""}>Pending</option>
+          <option value="A" ${m.result==="A"?"selected":""}>A wins</option>
+          <option value="B" ${m.result==="B"?"selected":""}>B wins</option>
+          <option value="D" ${m.result==="D"?"selected":""}>Draw</option>
+        </select>
+      </div>
+      <div class="fixtureTeam">
+        <select class="teamSelect" data-field="b" data-idx="${idx}">${playerOptions(m.b||"")}</select>
+      </div>
+      <button class="delMini" data-del="${idx}">Delete</button>
+    `;
+    container.appendChild(row);
+  });
+
+  // Wire events (edit mode only)
+  if(!VIEW_MODE){
+    container.querySelectorAll("select").forEach(sel=>{
+      sel.onchange = () => {
+        const idx = Number(sel.getAttribute("data-idx"));
+        const f = sel.getAttribute("data-field");
+        state.rounds[currentRound].matches[idx][f] = sel.value;
+        saveState();
+        renderStandings();
+      };
+    });
+
+    container.querySelectorAll("button[data-del]").forEach(btn=>{
+      btn.onclick = () => {
+        const idx = Number(btn.getAttribute("data-del"));
+        state.rounds[currentRound].matches.splice(idx,1);
+        saveState();
+        renderRound();
+        renderStandings();
+      };
+    });
+  }
+}
+
+function addMatch(){
+  if(VIEW_MODE) return;
+  state.rounds[currentRound].matches.push({a:"",b:"",result:""});
+  renderRound();
+}
+function seed18(){
+  if(VIEW_MODE) return;
+  state.rounds[currentRound].matches = Array.from({length:18}, ()=>({a:"",b:"",result:""}));
+  renderRound();
+}
+function clearRound(){
+  if(VIEW_MODE) return;
+  state.rounds[currentRound].matches = [];
+  renderRound(); renderStandings(); saveState();
+}
+
+function applyPlayers(){
+  if(VIEW_MODE) return;
+  const lines = document.getElementById("playersInput").value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const ps=[];
+  for(const ln of lines){
+    const parts = ln.split(",").map(x=>x.trim());
+    const name = parts[0];
+    const elo = Number(parts[1]||0) || 0;
+    if(name) ps.push({name, elo});
+  }
+  const seen = new Set();
+  state.players = ps.filter(p=>{ if(seen.has(p.name)) return false; seen.add(p.name); return true; });
+  state.cuts.blueCut = Number(document.getElementById("blueCut").value)||8;
+  state.cuts.greenCut = Number(document.getElementById("greenCut").value)||24;
+  state.scoring.win = Number(document.getElementById("winPts").value)||3;
+  state.scoring.draw = Number(document.getElementById("drawPts").value)||1;
+  state.scoring.loss = Number(document.getElementById("lossPts").value)||0;
+
+  const names = new Set(state.players.map(p=>p.name));
+  state.rounds.forEach(r=>r.matches.forEach(m=>{ if(m.a && !names.has(m.a)) m.a=""; if(m.b && !names.has(m.b)) m.b=""; }));
+
+  document.getElementById("playerCount").textContent = state.players.length;
+  renderRoundTabs(); renderRound(); renderStandings(); saveState();
+  alert("Players applied ✅");
+}
+
+function resetRounds(){
+  if(VIEW_MODE) return;
+  if(!confirm("Clear ALL rounds (1–8)?")) return;
+  state.rounds = Array.from({length:8}, ()=>({matches:[]}));
+  renderRoundTabs(); renderRound(); renderStandings(); saveState();
+}
+
+function doExport(){
+  const blob = {players:state.players, rounds:state.rounds, scoring:state.scoring, cuts:state.cuts};
+  document.getElementById("ioText").value = JSON.stringify(blob, null, 2);
+}
+function doImport(){
+  if(VIEW_MODE) return;
+  try{
+    const obj = JSON.parse(document.getElementById("ioText").value);
+    if(!obj.players || !obj.rounds || obj.rounds.length!==8) throw new Error("bad file");
+    state.players = obj.players;
+    state.rounds = obj.rounds;
+    state.scoring = obj.scoring || state.scoring;
+    state.cuts = obj.cuts || state.cuts;
+    document.getElementById("playersInput").value = state.players.map(p=>p.name+","+(p.elo||0)).join("\n");
+    document.getElementById("winPts").value = state.scoring.win;
+    document.getElementById("drawPts").value = state.scoring.draw;
+    document.getElementById("lossPts").value = state.scoring.loss;
+    document.getElementById("blueCut").value = state.cuts.blueCut;
+    document.getElementById("greenCut").value = state.cuts.greenCut;
+    renderRoundTabs(); renderRound(); renderStandings(); saveState();
+    alert("Imported ✅");
+  }catch(e){ alert("Import failed: " + e.message); }
+}
+function doReset(){
+  if(VIEW_MODE) return;
+  location.reload();
+}
+
+document.querySelectorAll("th[data-sort]").forEach(th=>{
+  th.onclick = () => {
+    const k = th.getAttribute("data-sort");
+    if(state.sort.key===k) state.sort.dir = (state.sort.dir==="desc") ? "asc":"desc";
+    else { state.sort.key=k; state.sort.dir = (k==="name") ? "asc":"desc"; }
+    renderStandings(); saveState();
+  };
+});
+
+document.getElementById("searchBox").oninput = renderStandings;
+
+
+// ===== AUTO SAVE / LOAD =====
+const STORAGE_KEY = "swiss_tv_state_v1";
+
+function saveState(){
+  if(VIEW_MODE) return;
+  const data = {
+    players: state.players,
+    rounds: state.rounds,
+    scoring: state.scoring,
+    cuts: state.cuts
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+  try{
+    const data = JSON.parse(raw);
+    if(!data.players || !data.rounds) return;
+    state.players = data.players;
+    state.rounds = data.rounds;
+    state.scoring = data.scoring || state.scoring;
+    state.cuts = data.cuts || state.cuts;
+  }catch(e){}
+}
+
+function init(){
+  loadState();
+
+  document.getElementById("playersInput").value = state.players.map(p=>p.name+","+(p.elo||0)).join("\n");
+  document.getElementById("playerCount").textContent = state.players.length;
+
+  if(VIEW_MODE){
+    document.querySelectorAll("#tab-rounds select, #tab-rounds button:not(.roundBtn), #tab-settings input, #tab-settings textarea, #tab-settings button, #tab-io textarea, #tab-io button")
+      .forEach(el=>{ if(el) el.disabled=true; });
+  }
+
+  renderRoundTabs();
+  renderRound();
+  renderStandings(); saveState();
+}
+init();
+
+let previousRanks = {};
+
+const _renderStandings = renderStandings;
+renderStandings = function(){
+  const search = (document.getElementById("searchBox").value||"").trim().toLowerCase();
+  let rows = sortRows(recalc());
+  if(search) rows = rows.filter(r => r.name.toLowerCase().includes(search));
+
+  const tb = document.getElementById("standingsBody");
+  tb.innerHTML = "";
+
+  const blueCut = Number(state.cuts.blueCut)||8;
+  const greenCut = Number(state.cuts.greenCut)||24;
+  const newRanks = {};
+
+  rows.forEach(r=>{
+    newRanks[r.name] = r.rank;
+    const prev = previousRanks[r.name];
+    const diff = (prev && r.played > 1) ? prev - r.rank : 0;
+
+    const cls = (r.rank<=blueCut) ? "blue" : (r.rank<=greenCut ? "green":"gray");
+    const tr = document.createElement("tr");
+
+    if(diff > 0) tr.classList.add("move-up");
+    if(diff < 0) tr.classList.add("move-down");
+
+    let arrow = "";
+    if(diff > 0) arrow = `<span class="rankDelta up">⬆️ +${diff}</span>`;
+    if(diff < 0) arrow = `<span class="rankDelta down">⬇️ ${diff}</span>`;
+
+    tr.innerHTML = `
+      <td class="rankCell"><span class="rankCircle ${cls}">${r.rank}</span></td>
+      <td><div class="playerCell">
+        <div class="playerName">${esc(r.name)} ${arrow}</div>
+        <div class="metaSmall">${r.elo||""}</div>
+      </div></td>
+      <td>${r.played}</td>
+      <td>${r.w}</td>
+      <td>${r.d}</td>
+      <td>${r.l}</td>
+      <td>${r.avgOpp}</td>
+      <td class="ptsCell" style="text-align:right">${r.points}</td>
+      <td><div class="last5">${formBoxes(r.form)}</div></td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  previousRanks = newRanks;
+  document.getElementById("scoreLabel").textContent =
+    `W ${state.scoring.win} • D ${state.scoring.draw} • L ${state.scoring.loss}`;
+  document.getElementById("playerCount").textContent = state.players.length;
+  saveState();
+};
+
+document.addEventListener("change", e=>{
+  if(e.target.matches("select[data-field='result']")){
+    const card = e.target.closest(".matchCard");
+    if(card){
+      card.classList.remove("matchPulse");
+      void card.offsetWidth;
+      card.classList.add("matchPulse");
+    }
+  }
+});
+
+
+// === POLISH PACK: viewer-only UI + round status ===
+function updateRoundStatus(){
+  const r = state.rounds[currentRound];
+  const total = r.matches.length;
+  const done = r.matches.filter(m => m.a && m.b && m.result).length;
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const status = `Round ${currentRound+1} • ${done}/${total} results entered • Updated ${hh}:${mm}`;
+  const el = document.getElementById("roundInfo");
+  if(el) el.textContent = status;
+}
+
+// Patch renderRound to apply winner bold/loser dim (viewer mode) and hide delete column
+const _renderRound_original = renderRound;
+renderRound = function(){
+  _renderRound_original();
+
+  // After original fixture render, enhance viewer labels based on result
+  const container = document.getElementById("roundMatches");
+  if(container){
+    container.querySelectorAll(".fixtureRow").forEach(row => {
+      const resEl = row.querySelector(".viewerRes");
+      const teams = row.querySelectorAll(".viewerTeam");
+      if(teams.length>=2 && resEl){
+        // reset classes
+        teams[0].classList.remove("win","lose");
+        teams[1].classList.remove("win","lose");
+        if(resEl.classList.contains("winA")){
+          teams[0].classList.add("win");
+          teams[1].classList.add("lose");
+        }else if(resEl.classList.contains("winB")){
+          teams[1].classList.add("win");
+          teams[0].classList.add("lose");
+        }
+}
+      // hide delete in viewer
+      if(VIEW_MODE){
+        const del = row.querySelector("button.delMini");
+        if(del) del.classList.add("viewerHide");
+      }
+    });
+  }
+
+  if(VIEW_MODE){
+    // Hide Add/Seed/Clear buttons row in rounds tab
+    document.querySelectorAll("#tab-rounds .row button:not(.roundBtn)").forEach(btn=>btn.classList.add("viewerHide"));
+  }
+
+  updateRoundStatus();
+};
+
+// Also update status when changing round tabs
+const _renderRoundTabs_original = renderRoundTabs;
+renderRoundTabs = function(){
+  _renderRoundTabs_original();
+  updateRoundStatus();
+};
+
+</script>
+</body>
+</html>
