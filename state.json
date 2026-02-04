@@ -1,0 +1,38 @@
+{
+  "players": [],
+  "rounds": [
+    {
+      "matches": []
+    },
+    {
+      "matches": []
+    },
+    {
+      "matches": []
+    },
+    {
+      "matches": []
+    },
+    {
+      "matches": []
+    },
+    {
+      "matches": []
+    },
+    {
+      "matches": []
+    },
+    {
+      "matches": []
+    }
+  ],
+  "scoring": {
+    "win": 3,
+    "draw": 1,
+    "loss": 0
+  },
+  "cuts": {
+    "blueCut": 8,
+    "greenCut": 24
+  }
+}
